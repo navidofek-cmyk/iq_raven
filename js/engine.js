@@ -25,7 +25,7 @@ function buildQuestion(qIndex) {
   const difficulty = getDifficulty(qIndex);
   const matrix = generatePuzzle(difficulty);
   const correctCell = matrix[2][2];
-  const choices = generateChoices(correctCell, difficulty);
+  const choices = generateChoices(correctCell);
   const correctIndex = choices.findIndex(c =>
     c.shape === correctCell.shape &&
     c.fill  === correctCell.fill  &&

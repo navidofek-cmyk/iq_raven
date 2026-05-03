@@ -198,37 +198,23 @@ function renderCell(canvas, cell, cellSize = 110) {
 }
 
 // Generate 6 answer choices: 1 correct + 5 distractors
-function generateChoices(correctCell, difficulty) {
-  const choices = [correctCell];
+// Always produce: 2 with different shape, 2 with different fill, 2 with different color
+// so every answer option looks visually distinct.
+function generateChoices(correctCell) {
+  const pool = [];
 
-  // rotation looks identical on symmetric shapes (circle, square, cross) — skip it
-  const symmetricShapes = ['circle', 'square', 'cross'];
-  const distractorAttrs = symmetricShapes.includes(correctCell.shape)
-    ? ['shape', 'fill', 'size', 'color']
-    : ['shape', 'fill', 'size', 'color', 'rotation'];
+  const otherShapes = shuffle(SHAPES.filter(s => s !== correctCell.shape));
+  const otherFills  = shuffle(FILLS.filter(f => f !== correctCell.fill));
+  const otherColors = shuffle(COLORS.filter(c => c !== correctCell.color));
 
-  while (choices.length < 6) {
-    const base = { ...correctCell };
-    // mutate 1 attribute for easy, 1-2 for harder
-    const numMutations = difficulty === 1 ? 1 : Math.random() > 0.5 ? 1 : 2;
-    const attrs = shuffle(distractorAttrs).slice(0, numMutations);
+  pool.push({ ...correctCell, shape: otherShapes[0] });
+  pool.push({ ...correctCell, shape: otherShapes[1] });
+  pool.push({ ...correctCell, fill:  otherFills[0]  });
+  pool.push({ ...correctCell, fill:  otherFills[1]  });
+  pool.push({ ...correctCell, color: otherColors[0] });
+  pool.push({ ...correctCell, color: otherColors[1] });
 
-    for (const attr of attrs) {
-      if (attr === 'shape')    base.shape    = pickRandom(SHAPES.filter(s => s !== base.shape));
-      if (attr === 'fill')     base.fill     = pickRandom(FILLS.filter(f => f !== base.fill));
-      if (attr === 'size')     base.size     = pickRandom(SIZES.filter(s => s !== base.size));
-      if (attr === 'color')    base.color    = pickRandom(COLORS.filter(c => c !== base.color));
-      if (attr === 'rotation') base.rotation = pickRandom([0, 45, 90, 135].filter(r => r !== base.rotation));
-    }
-
-    // avoid exact duplicate of existing choice
-    const isDupe = choices.some(c =>
-      c.shape === base.shape && c.fill === base.fill &&
-      c.size  === base.size  && c.color === base.color &&
-      c.rotation === base.rotation
-    );
-    if (!isDupe) choices.push(base);
-  }
-
-  return shuffle(choices);
+  // pick 5 from the 6-item pool, then add the correct answer
+  const distractors = shuffle(pool).slice(0, 5);
+  return shuffle([correctCell, ...distractors]);
 }
