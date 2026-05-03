@@ -34,11 +34,12 @@ function drawShape(ctx, shape, fill, size, color, cx, cy, cellSize, rotation = 0
       ctx.lineTo(-r, 0);
       ctx.closePath();
       break;
-    case 'cross':
+    case 'cross': {
       const t = r * 0.3;
       ctx.rect(-t, -r, t * 2, r * 2);
       ctx.rect(-r, -t, r * 2, t * 2);
       break;
+    }
     case 'pentagon':
       for (let i = 0; i < 5; i++) {
         const a = (i * 2 * Math.PI) / 5 - Math.PI / 2;
@@ -200,7 +201,11 @@ function renderCell(canvas, cell, cellSize = 110) {
 function generateChoices(correctCell, difficulty) {
   const choices = [correctCell];
 
-  const distractorAttrs = ['shape', 'fill', 'size', 'color', 'rotation'];
+  // rotation looks identical on symmetric shapes (circle, square, cross) — skip it
+  const symmetricShapes = ['circle', 'square', 'cross'];
+  const distractorAttrs = symmetricShapes.includes(correctCell.shape)
+    ? ['shape', 'fill', 'size', 'color']
+    : ['shape', 'fill', 'size', 'color', 'rotation'];
 
   while (choices.length < 6) {
     const base = { ...correctCell };
