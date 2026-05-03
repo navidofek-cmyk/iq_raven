@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Test – Ravenovy matice</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<header>
+  <span>🧩</span>
+  <h1>Ravenovy progresivní matice</h1>
+</header>
+
+<div class="container">
+  <div class="test-header">
+    <span class="progress" id="qProgress">Otázka 1 / 12</span>
+    <span class="timer" id="timer">0:30</span>
+  </div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar" id="progressBar" style="width:0%"></div>
+  </div>
+
+  <!-- 3×3 matrix -->
+  <div class="matrix-wrap">
+    <div class="matrix-grid" id="matrixGrid"></div>
+  </div>
+
+  <p class="choices-label">Vyber chybějící díl:</p>
+  <div class="choices-grid" id="choicesGrid"></div>
+</div>
+
+<script src="js/generator.js"></script>
+<script src="js/engine.js"></script>
+<script>
+  initTest();
+  renderQuestion();
+
+  function renderQuestion() {
+    const q = state.questions[state.current];
+
+    // Progress
+    document.getElementById('qProgress').textContent =
+      `Otázka ${state.current + 1} / ${TOTAL_QUESTIONS}`;
+    document.getElementById('progressBar').style.width =
+      `${(state.current / TOTAL_QUESTIONS) * 100}%`;
+
+    // Matrix
+    const grid = document.getElementById('matrixGrid');
+    grid.innerHTML = '';
+    for (let r = 0; r < 3; r++) {
+      for (let c = 0; c < 3; c++) {
+        const cell = document.createElement('div');
+        cell.className = 'matrix-cell';
+        if (r === 2 && c === 2) {
+          cell.classList.add('missing');
+          cell.textContent = '?';
+        } else {
+          const canvas = document.createElement('canvas');
+          renderCell(canvas, q.matrix[r][c], 110);
+          cell.appendChild(canvas);
+        }
+        grid.appendChild(cell);
+      }
+    }
+
+    // Choices
+    const cGrid = document.getElementById('choicesGrid');
+    cGrid.innerHTML = '';
+    q.choices.forEach((choice, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      const canvas = document.createElement('canvas');
+      renderCell(canvas, choice, 90);
+      btn.appendChild(canvas);
+      btn.addEventListener('click', () => handleAnswer(i));
+      cGrid.appendChild(btn);
+    });
+
+    // Timer
+    startTimer(
+      (s) => {
+        const el = document.getElementById('timer');
+        el.textContent = `0:${String(s).padStart(2, '0')}`;
+        el.className = 'timer' + (s <= 10 ? ' warn' : '');
+      },
+      () => handleAnswer(-1)
+    );
+  }
+
+  function handleAnswer(index) {
+    const { correct, correctIndex } = submitAnswer(index);
+
+    // Highlight choices
+    const btns = document.querySelectorAll('.choice-btn');
+    btns.forEach(b => b.style.pointerEvents = 'none');
+    if (index >= 0) {
+      btns[index].classList.add(correct ? 'correct' : 'wrong');
+    }
+    btns[correctIndex].classList.add('correct');
+
+    setTimeout(() => {
+      const hasMore = nextQuestion();
+      if (hasMore) {
+        renderQuestion();
+      } else {
+        // Save results and redirect
+        sessionStorage.setItem('ravenResults', JSON.stringify(calcResults()));
+        window.location.href = 'results.html';
+      }
+    }, 900);
+  }
+</script>
+</body>
+</html>

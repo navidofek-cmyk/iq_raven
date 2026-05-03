@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Výsledky – Ravenovy matice</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<header>
+  <span>🧩</span>
+  <h1>Ravenovy progresivní matice</h1>
+</header>
+
+<div class="container">
+  <div class="results-box">
+    <h2>Výsledky testu</h2>
+
+    <div class="score-big" id="iqScore">—</div>
+    <div class="iq-label">odhadované IQ</div>
+
+    <div class="stats-row">
+      <div class="stat">
+        <div class="val" id="statCorrect">—</div>
+        <div class="lbl">správných odpovědí</div>
+      </div>
+      <div class="stat">
+        <div class="val" id="statTotal">—</div>
+        <div class="lbl">celkem otázek</div>
+      </div>
+      <div class="stat">
+        <div class="val" id="statTime">—</div>
+        <div class="lbl">průměrný čas (s)</div>
+      </div>
+    </div>
+
+    <div class="percentile-bar-wrap">
+      <div class="percentile-bar" id="percentileBar" style="width:0%"></div>
+    </div>
+    <p class="percentile-label" id="percentileLabel">—</p>
+
+    <a href="index.html" class="btn">Zpět na úvod</a>
+    <a href="test.html" class="btn btn-secondary">Zkusit znovu</a>
+  </div>
+</div>
+
+<script>
+  const raw = sessionStorage.getItem('ravenResults');
+  if (!raw) {
+    window.location.href = 'index.html';
+  } else {
+    const r = JSON.parse(raw);
+    document.getElementById('iqScore').textContent    = r.iq;
+    document.getElementById('statCorrect').textContent = r.correct;
+    document.getElementById('statTotal').textContent   = r.total;
+    document.getElementById('statTime').textContent    = r.avgTime;
+    document.getElementById('percentileLabel').textContent =
+      `Jsi v top ${100 - r.percentile}% populace (percentil ${r.percentile})`;
+
+    setTimeout(() => {
+      document.getElementById('percentileBar').style.width = r.percentile + '%';
+    }, 100);
+  }
+</script>
+</body>
+</html>
